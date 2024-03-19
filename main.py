@@ -10,6 +10,7 @@ def select_csv_file():
         global csv_df
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
         csv_df = pd.read_csv(file_path)   
+        get_student_name()
     except UnicodeDecodeError:
         messagebox.showerror("Eroare","Selectati fisierul care contine situatia scolara in format .csv. Ati selectat alt format de fisier.")
     
@@ -23,12 +24,10 @@ def select_excel_file():
         messagebox.showerror("Eroare","Selectati fisierul care contine planul de invatamant in format excel. Ati selectat alt format de fisier.")
 
 # obtinere nume student pentru a fi folosit in denumirea folderului si a numelui fisierului generat 
-def get_student_name():
-    try:    
-        global student_name
-        student_name = simpledialog.askstring("Student Name", "Enter the student's name:")
-    except NameError:
-        messagebox.showerror("Error", str("Introduceti numele studentului!"))
+def get_student_name():       
+    global student_name
+    student_name = csv_df.at[0,'textbox10']
+    
 
 #normalizarea unui sir de caractere
 # - pentru a putea normaliza denumirile materiilor pentrua a putea fi comparate 
@@ -173,14 +172,9 @@ def create_primary_button(text, command):
     button = tk.Button(root, text=text, command=command, font=('Helvetica', 15), padx=10, pady=5, bg='#50727B', fg='white', relief=tk.RAISED, cursor='hand2')
     return button
 
-
-get_student_name_button = create_primary_button("Introduceti numele studentului", get_student_name)
-get_student_name_button.pack(side=tk.TOP, pady=(100, 20))
-
-
 # Create buttons for selecting .csv and Excel files
 csv_button = create_primary_button("Selecteaza fisierul care contine situatia scolara a studentului in format .csv", select_csv_file)
-csv_button.pack(side=tk.TOP, pady=20)
+csv_button.pack(side=tk.TOP, pady=(150, 20))
 
 excel_button =create_primary_button("Selecteaza fisierul care contine planul de invatamant in format excel", select_excel_file)
 excel_button.pack(side=tk.TOP, pady=20)
