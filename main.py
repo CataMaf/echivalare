@@ -31,6 +31,7 @@ def get_student_name():
 def get_matricola():
     global nr_matricol    
     matricola = csv_df.at[0, 'textbox9']
+    print(matricola)
     mm = matricola.split('nr. ',1)
     mm1 = mm[1].split(', ',1)
     nr_matricol= mm1[0]
@@ -77,6 +78,13 @@ def prelucrare_csv(dataframe):
         newList.append(normalize_string(item))                             
     dataframe['Materia']= newList 
 
+    #extragem notele la practica de specialitate in functie de semestru
+    global note_practica
+    list_practica = csv_df[(csv_df['Materia']=='Practica de specialitate')]
+    list_semestrul_ii = list_practica[list_practica['textbox2'].str.startswith('SEMESTRUL II')]['Nota'].tolist()
+    list_semestrul_iv = list_practica[list_practica['textbox2'].str.startswith('SEMESTRUL IV')]['Nota'].tolist()
+    note_practica = [max(list_semestrul_ii, default=''), max(list_semestrul_iv, default='')]
+    
     # eliminam duplicatele din lista de materii pastrand-o doar pe cea cu nota cea mai mare
     dataframe.sort_values(['Materia','Nota'],ascending=[True,False], inplace=True)
     dataframe.drop_duplicates(subset=['Materia'], keep='first', inplace=True)
@@ -105,10 +113,18 @@ def prelucrare_date():
         print(B.cell(row=rand, column=2).value)       
         if normalize_string(B.cell(row=rand, column=2).value) in list1:            
             B.cell(row=rand, column=4, value = list2[list1.index(normalize_string(B.cell(row=rand, column=2).value))])
+            if normalize_string(B.cell(row=rand, column=2).value)=='Practica de specialitate':
+                B.cell(row=rand, column=4, value = note_practica[0])
+                note_practica.pop(0)                
             if list2[list1.index(normalize_string(B.cell(row=rand, column=2).value))] > 4:
                 B.cell(row=rand, column=5, value = B.cell(row=rand, column=2).value)
             else:
                 B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
+            if normalize_string(B.cell(row=rand, column=2).value) == 'Practica de specialitate':
+                if B.cell(row=rand, column=4).value == '':
+                    B.cell(row=rand, column=5, value = 'Examen de diferenta')
+                elif B.cell(row=rand, column=4).value < 5:
+                    B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
             if normalize_string(B.cell(row=rand, column=2).value) in ['Educatia fizica','Educatie fizica']:
                 B.cell(row=rand, column=5, value = '')
                 B.cell(row=rand, column=4, value = '')
@@ -137,12 +153,12 @@ def show_message():
 
 # functia principala care ruleaza aplicatia
 def rulare_program():
-    try:
+    # try:
         prelucrare_csv(csv_df)
         prelucrare_date()        
         show_message()
-    except Exception:        
-        messagebox.showerror("Eroare","S-a produs o eroare. Posibile cauze:\n- nu ati introdus numele studentului\n-nu ati selectat fisierele necesare\n-ati selectat fisiere gresite\nVerificati si incercati din nou!")
+    # except Exception:        
+        # messagebox.showerror("Eroare","S-a produs o eroare. Posibile cauze:\n- nu ati introdus numele studentului\n-nu ati selectat fisierele necesare\n-ati selectat fisiere gresite\nVerificati si incercati din nou!")
     
 # Create the main application window
 root = tk.Tk()
