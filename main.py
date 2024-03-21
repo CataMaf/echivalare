@@ -9,8 +9,9 @@ from openpyxl import load_workbook
 def select_csv_file(): 
     try:   
         global csv_df
-        file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-        csv_df = pd.read_csv(file_path)   
+        global csv_file_path
+        csv_file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        csv_df = pd.read_csv(csv_file_path)   
         get_student_name()
         get_matricola()
     except UnicodeDecodeError:
@@ -46,6 +47,19 @@ def normalize_string(string):
     string = unicodedata.normalize('NFD', string)
     string =''.join(c for c in string if not unicodedata.combining(c))
     return string   
+
+# extragem din fisierul csv datele referitoare la exmatriculare sau intrrupere studii
+def get_exmatriculare_intrerupere():
+    with open(csv_file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+        for i in range(len(lines)-1):
+            if lines[i].strip() == '':
+                if 'year' in lines[i-1].strip().lower():
+                    return lines[i-2]                    
+                else:
+                    return lines[i-1]
+    return ''
+                    
 
 #prelucrare dataframe obtinut din fisierul csv
 def prelucrare_csv(dataframe):
@@ -102,12 +116,14 @@ def prelucrare_date():
     new_dict ={}        
     for i in range (0,len(list1)):
         new_dict[list1[i]]=list2[i] 
-    
+    # date referitoare la exmatriculare sau intrerupere studii
+    message = get_exmatriculare_intrerupere()
     #scriem notele si mentiuni asupra examenelor direct in macheta pv echivalare
     A = load_workbook(pv_path)
     B = A['Sheet1']
     B.cell(row=8,column=1,value=student_name)
     B.cell(row=9,column=1,value=f'număr matricol: {nr_matricol}')
+    B.cell(row=11,column=1,value=message)
     rand = 15
     while rand<B.max_row: 
         print(B.cell(row=rand, column=2).value)       
