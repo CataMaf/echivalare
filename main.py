@@ -126,11 +126,10 @@ def prelucrare_date():
     B.cell(row=11,column=1,value=message)
     rand = 15
     total_puncte=0
-    while rand<B.max_row:   
-        print(B.cell(row=rand, column=2).value)           
+    while rand<B.max_row:                            
         if normalize_string(B.cell(row=rand, column=2).value) in list1:            
             B.cell(row=rand, column=4, value = list2[list1.index(normalize_string(B.cell(row=rand, column=2).value))])
-            if normalize_string(B.cell(row=rand, column=2).value)=='Practica de specialitate':
+            if normalize_string(B.cell(row=rand, column=2).value)=='Practica de specialitate':#introducere note la Practica de specialitate functie de semestru (cea mai mare nota corespunzatoare semestrului 2 respectiv 4)  
                 B.cell(row=rand, column=4, value = note_practica[0])
                 note_practica.pop(0)                
             if list2[list1.index(normalize_string(B.cell(row=rand, column=2).value))] > 4:
@@ -142,24 +141,52 @@ def prelucrare_date():
                     B.cell(row=rand, column=5, value = 'Examen de diferenta')
                 elif B.cell(row=rand, column=4).value < 5:
                     B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
+            #ignoram disciplina educatie fizica datorita particularitatilor ce trebuiesc analizate separat de operator
             if normalize_string(B.cell(row=rand, column=2).value) in ['Educatia fizica','Educatie fizica']:
                 B.cell(row=rand, column=5, value = '')
-                B.cell(row=rand, column=4, value = '')
-            
+                B.cell(row=rand, column=4, value = '')            
         else:
             if type(B.cell(row=rand, column=3).value) is int:
                 B.cell(row=rand, column=5, value = 'Examen de diferenta')
                 if B.cell(row=rand,column=2).value.startswith('Limba'):
                     B.row_dimensions[rand].hidden = True
-        if type(B.cell(row=rand, column=4).value) is int:
-            print(total_puncte)
+        if type(B.cell(row=rand, column=4).value) is int:            
             if B.cell(row=rand,column=4).value > 4:
-                total_puncte+=B.cell(row=rand,column=3).value*B.cell(row=rand,column=4).value
-                print(total_puncte)
-        if normalize_string(B.cell(row=rand,column=2).value) == 'Total puncte':
-            print(total_puncte)
+                total_puncte+=B.cell(row=rand,column=3).value*B.cell(row=rand,column=4).value                
+        if normalize_string(B.cell(row=rand,column=2).value) == 'Total puncte':            
             B.cell(row=rand,column=4, value = total_puncte)
             total_puncte = 0
+        rand+=1
+    
+    # calcul taxa de scolarizare
+    rand =15
+    taxa=0    
+    while rand < B.max_row:
+        if normalize_string(B.cell(row=rand,column=2).value) not in ['Educatia fizica','Educatie fizica']:            
+            if type(B.cell(row=rand,column=4).value) is int:
+                if B.cell(row=rand,column=4).value < 5:
+                    taxa += B.cell(row=rand,column=3).value*55                                       
+            elif type(B.cell(row=rand, column=3).value) is int:                
+                if B.cell(row=rand, column=4).value == '' or B.cell(row=rand,column=4).value ==None:
+                    if B.row_dimensions[rand].hidden == False:
+                        taxa += B.cell(row=rand,column=3).value*55                                                  
+            if type(B.cell(row=rand,column=2).value) is str:
+                if normalize_string(B.cell(row =rand, column=2).value).startswith('Optional'):
+                    text = B.cell(row =rand, column=2).value.split('(',1)[1].split('din')
+                    necesare = int(text[0].strip())
+                    totale = int(text[1].split(')')[0].strip())                
+                    contor=0
+                    inner_rand = rand
+                    while inner_rand <= rand + totale:
+                        if type(B.cell(row=inner_rand,column=4).value) is int:
+                            if B.cell(row=inner_rand,column=4).value > 4:
+                                contor+=1                                               
+                        inner_rand+=1
+                    taxa +=(necesare-contor)*55*B.cell(row=rand+1,column=3).value
+                    rand=inner_rand            
+            if normalize_string(B.cell(row=rand,column=2).value) == 'Total puncte':                    
+                    B.cell(row=rand,column=5, value = f'Taxa de plata : {taxa} lei')
+                    taxa = 0        
         rand+=1
     output_folder = os.path.join(os.path.expanduser('~'), 'Desktop', 'Fisiere create pentru echivalare', f'{student_name}')
     os.makedirs(output_folder, exist_ok=True)
