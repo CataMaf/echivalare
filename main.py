@@ -22,6 +22,10 @@ def select_excel_file():
     global pv_path
     pv_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])        
    
+#selectare fisier excel cu macheta catalogului de diferente
+def select_catalog_diferente():
+    global catalog_path
+    catalog_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
 
 # obtinere nume student pentru a fi folosit in denumirea folderului si a numelui fisierului generat 
 def get_student_name():       
@@ -31,8 +35,7 @@ def get_student_name():
 # obtinere numar matricol
 def get_matricola():
     global nr_matricol    
-    matricola = csv_df.at[0, 'textbox9']
-    print(matricola)
+    matricola = csv_df.at[0, 'textbox9']    
     mm = matricola.split('nr. ',1)
     mm1 = mm[1].split(', ',1)
     nr_matricol= mm1[0]
@@ -120,11 +123,15 @@ def prelucrare_date():
     message = get_exmatriculare_intrerupere()
     #scriem notele si mentiuni asupra examenelor direct in macheta pv echivalare
     A = load_workbook(pv_path)
+    A1 =load_workbook(catalog_path)
     B = A['Sheet1']
+    B1 = A1['Sheet1']
     B.cell(row=8,column=1,value=student_name)
     B.cell(row=9,column=1,value=f'număr matricol: {nr_matricol}')
     B.cell(row=11,column=1,value=message)
-    rand = 15
+    B1.cell(row=14,column=1,value=f'pentru studentul {student_name}')
+    B1.cell(row=15,column=1,value=f'numar matricol: {nr_matricol} inmatriculat in anul III de studii')
+    rand = 15    
     total_puncte=0
     while rand<B.max_row:                            
         if normalize_string(B.cell(row=rand, column=2).value) in list1:            
@@ -160,8 +167,9 @@ def prelucrare_date():
     
     # calcul taxa de scolarizare
     rand =15
-    taxa=0    
-    while rand < B.max_row:
+    taxa=0 
+    
+    while rand < B.max_row:           
         if normalize_string(B.cell(row=rand,column=2).value) not in ['Educatia fizica','Educatie fizica']:            
             if type(B.cell(row=rand,column=4).value) is int:
                 if B.cell(row=rand,column=4).value < 5:
@@ -188,10 +196,19 @@ def prelucrare_date():
                     B.cell(row=rand,column=5, value = f'Taxa de plata : {taxa} lei')
                     taxa = 0        
         rand+=1
+    rand =15
+    rand1=19   
+    while rand < B.max_row:
+        if normalize_string(B.cell(row=rand,column=5).value) == 'Examen de diferenta' and B.row_dimensions[rand].hidden == False:            
+            B1.cell(row=rand1, column=2, value=B.cell(row=rand,column=2).value)
+            rand1+=2
+        rand+=1
     output_folder = os.path.join(os.path.expanduser('~'), 'Desktop', 'Fisiere create pentru echivalare', f'{student_name}')
     os.makedirs(output_folder, exist_ok=True)
     output_file_path_pv = os.path.join(output_folder, f'PV_echivalare_{student_name}.xlsx')
+    output_file_path_catalog = os.path.join(output_folder, f'Catalog_diferente_{student_name}.xlsx')
     A.save(output_file_path_pv)
+    A1.save(output_file_path_catalog)
 
     # generam  ordonarea alfabetica a examenelor sutinute, si le scriem intr-un sitem de foldere creat pe desktop
     output_file_path_examene = os.path.join(output_folder, f'Examene_sustinute_ordine_alfabetica_{student_name}.xlsx')
@@ -238,15 +255,18 @@ def create_primary_button(text, command):
     button = tk.Button(root, text=text, command=command, font=('Helvetica', 15), padx=10, pady=5, bg='#50727B', fg='white', relief=tk.RAISED, cursor='hand2')
     return button
 
-# Create buttons for selecting .csv and Excel files
+# creare butoane de selectare a fiseruluicu situatia scolara si a machetelor excel (echivalare si catalog)
 csv_button = create_primary_button("Selecteaza fisierul care contine situatia scolara a studentului in format .csv", select_csv_file)
-csv_button.pack(side=tk.TOP, pady=(150, 20))
+csv_button.pack(side=tk.TOP, pady=(100, 20))
 
 excel_button =create_primary_button("Selecteaza fisierul care contine macheta procesului verbal de echivalare in format excel", select_excel_file)
 excel_button.pack(side=tk.TOP, pady=20)
 
-# Create a button to print the DataFrames
-print_button =create_primary_button("Prelucreaza fisierele", rulare_program)
+catalog_button =create_primary_button("Selecteaza fisierul care contine macheta catalogului de diferente in format excel", select_catalog_diferente)   
+catalog_button.pack(side=tk.TOP, pady=20)
+
+# creare buton de generare a fisierelor dorite
+print_button =create_primary_button("Genereaza pv echivalare si catalog", rulare_program)
 print_button.pack(side=tk.BOTTOM, pady=20)
 
 # Run the application
