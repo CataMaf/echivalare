@@ -133,7 +133,10 @@ def prelucrare_date():
     B1.cell(row=15,column=1,value=f'numar matricol: {nr_matricol} inmatriculat in anul III de studii')
     rand = 15    
     total_puncte=0
-    while rand<B.max_row:                            
+    an_3 = False
+    while rand<B.max_row:          
+        if type(B.cell(row=rand,column=1).value) is str and B.cell(row=rand,column=1).value.startswith('An III'):            
+            an_3 = True
         if normalize_string(B.cell(row=rand, column=2).value) in list1:            
             B.cell(row=rand, column=4, value = list2[list1.index(normalize_string(B.cell(row=rand, column=2).value))])
             if normalize_string(B.cell(row=rand, column=2).value)=='Practica de specialitate':#introducere note la Practica de specialitate functie de semestru (cea mai mare nota corespunzatoare semestrului 2 respectiv 4)  
@@ -154,7 +157,10 @@ def prelucrare_date():
                 B.cell(row=rand, column=4, value = '')            
         else:
             if type(B.cell(row=rand, column=3).value) is int:
-                B.cell(row=rand, column=5, value = 'Examen de diferenta')
+                if an_3 == False:
+                    B.cell(row=rand, column=5, value = 'Examen de diferenta')
+                else:
+                    B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
                 if B.cell(row=rand,column=2).value.startswith('Limba'):
                     B.row_dimensions[rand].hidden = True
         if type(B.cell(row=rand, column=4).value) is int:            
@@ -196,9 +202,11 @@ def prelucrare_date():
                     B.cell(row=rand,column=5, value = f'Taxa de plata : {taxa} lei')
                     taxa = 0        
         rand+=1
+
+    #generare catalog examene de diferente
     rand =15
     rand1=19   
-    while rand < B.max_row:
+    while rand < B.max_row:        
         if normalize_string(B.cell(row=rand,column=5).value) == 'Examen de diferenta' and B.row_dimensions[rand].hidden == False:            
             B1.cell(row=rand1, column=2, value=B.cell(row=rand,column=2).value)
             rand1+=2
