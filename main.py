@@ -174,8 +174,10 @@ def prelucrare_date():
     # calcul taxa de scolarizare
     rand =15
     taxa=0 
-    
-    while rand < B.max_row:           
+    an_3=False
+    while rand < B.max_row: 
+        if type(B.cell(row=rand,column=1).value) is str and B.cell(row=rand,column=1).value.startswith('An III'):            
+            an_3 = True          
         if normalize_string(B.cell(row=rand,column=2).value) not in ['Educatia fizica','Educatie fizica']:            
             if type(B.cell(row=rand,column=4).value) is int:
                 if B.cell(row=rand,column=4).value < 5:
@@ -194,9 +196,18 @@ def prelucrare_date():
                     while inner_rand <= rand + totale:
                         if type(B.cell(row=inner_rand,column=4).value) is int:
                             if B.cell(row=inner_rand,column=4).value > 4:
-                                contor+=1                                               
+                                contor+=1
+                            else:
+                                if an_3 == False:
+                                    B.cell(row=inner_rand,column=5, value = 'Examen de diferenta')                                                                              
                         inner_rand+=1
                     taxa +=(necesare-contor)*55*B.cell(row=rand+1,column=3).value
+                    if contor==necesare:
+                        inner_rand = rand
+                        while inner_rand <= rand + totale:
+                            if B.cell(row=inner_rand,column=5).value=='Examen de diferenta' or B.cell(row=inner_rand,column=5).value=='Disciplina nepromovata':
+                                B.cell(row=inner_rand,column=5, value = '')
+                            inner_rand+=1
                     rand=inner_rand            
             if normalize_string(B.cell(row=rand,column=2).value) == 'Total puncte':                    
                     B.cell(row=rand,column=5, value = f'Taxa de plata : {taxa} lei')
