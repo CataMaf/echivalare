@@ -156,6 +156,30 @@ def prelucrare_date():
                 B.cell(row=rand, column=5, value = '')
                 B.cell(row=rand, column=4, value = '')            
         else:
+            #verificare discipline cu denumirea schimbata
+            if normalize_string(B.cell(row=rand, column=2).value) == 'Bazele teoretice ale diagnosticului':
+                if 'Psihodiagnostic I' in list1:
+                    B.cell(row=rand, column=4, value = list2[list1.index('Psihodiagnostic I')])
+                    if list2[list1.index('Psihodiagnostic I')] > 4:
+                        B.cell(row=rand, column=5, value = 'Psihodiagnostic I')
+                    else:
+                        B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
+            if normalize_string(B.cell(row=rand, column=2).value) == 'Psihodiagnosticul personalitatii':
+                if 'Psihodiagnostic II' in list1:
+                    B.cell(row=rand, column=4, value = list2[list1.index('Psihodiagnostic II')])
+                    if list2[list1.index('Psihodiagnostic II')] > 4:
+                        B.cell(row=rand, column=5, value = 'Psihodiagnostic II')
+                    else:
+                        B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
+            if normalize_string(B.cell(row=rand, column=2).value) == 'Neurostiinte':
+                if 'Neuropsihologie' in list1:
+                    B.cell(row=rand, column=4, value = list2[list1.index('Neuropsihologie')])
+                    if list2[list1.index('Neuropsihologie')] > 4:
+                        B.cell(row=rand, column=5, value = 'Neuropsihologie')
+                    else:
+                        B.cell(row=rand, column=5, value = 'Disciplina nepromovata')
+
+                        
             if type(B.cell(row=rand, column=3).value) is int:
                 if an_3 == False:
                     B.cell(row=rand, column=5, value = 'Examen de diferenta')
